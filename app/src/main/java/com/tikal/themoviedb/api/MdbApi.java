@@ -24,21 +24,21 @@ public class MdbApi {
 
     private static MdbApi mInstance = null;
 
-    public static synchronized MdbApi getInstance(){
-        if(mInstance == null){
+    public static synchronized MdbApi getInstance() {
+        if (mInstance == null) {
             mInstance = new MdbApi();
         }
         return mInstance;
     }
 
-    private MdbApi(){
+    private MdbApi() {
         RestAdapter.Builder builder = new RestAdapter.Builder();
         builder.setClient(new OkClient(HttpClient.getInstance()));
         builder.setEndpoint(API_URL);
 //        builder.setConverter(new GsonConverter(TmdbHelper.getGsonBuilder().create()));
         builder.setRequestInterceptor(new RequestInterceptor() {
             public void intercept(RequestFacade requestFacade) {
-                if(!OSUtil.isNetworkAvailable()){
+                if (!OSUtil.isNetworkAvailable()) {
                     int maxStale = 60 * 60 * 24 * 28; // tolerate 4-weeks stale
                     requestFacade.addHeader("Cache-Control",
                             "public, only-if-cached, max-stale=" + maxStale);
@@ -50,7 +50,7 @@ public class MdbApi {
         mRestAdapter = builder.build();
     }
 
-    public static ConfigurationService configurationService(){
+    public static ConfigurationService configurationService() {
         return getInstance().mRestAdapter.create(ConfigurationService.class);
     }
 

@@ -51,6 +51,10 @@ public class MoviesGridAdapter extends RecyclerView.Adapter<MovieViewHolder> {
         Picasso.with(mContext).load(Uri.parse(path)).placeholder(R.drawable.grid_placeholder).into(holder.image);
     }
 
+    public void addItems(List<Movie> itemList){
+        mItemList.addAll(itemList);
+        notifyDataSetChanged();
+    }
     @Override
     public int getItemCount() {
         return this.mItemList.size();

@@ -42,30 +42,70 @@ public class MoviesGridFragment extends Fragment {
         mMovieGrid = (RecyclerView)view.findViewById(R.id.movieGrid);
         mMovieGrid.setHasFixedSize(true);
         mMovieGrid.setLayoutManager(mGridLayoutManager);
+        mMovieGrid.addOnScrollListener(onScrollListener);
         mProgressIndicator =  view.findViewById(R.id.progressIndicator);
-        MdbApi.moviesService().popular(1, new Callback<MovieResultsPage>() {
+        loadPage(mCurrentPage);
+        return view;
+    }
+
+    private void loadPage(int page) {
+        MdbApi.moviesService().popular(page, new Callback<MovieResultsPage>() {
             @Override
             public void success(MovieResultsPage movieResultsPage, Response response) {
                 onMovieListLoaded(movieResultsPage.results);
+                mLoading = false;
             }
 
             @Override
             public void failure(RetrofitError error) {
                 toggleProgressIndicatorState(false);
+                mLoading = false;
             }
         });
-        return view;
     }
 
     private void onMovieListLoaded(List<Movie> movies){
         final Activity activity = getActivity();
         ((MovieGridController)activity).onMovieListLoaded(movies.isEmpty()? null : movies.get(0));
-        mMoviesGridAdapter = new MoviesGridAdapter(activity,movies);
-        mMovieGrid.setAdapter(mMoviesGridAdapter);
+        if(mMoviesGridAdapter == null) {
+            mMoviesGridAdapter = new MoviesGridAdapter(activity, movies);
+            mMovieGrid.setAdapter(mMoviesGridAdapter);
+        }
+        else{
+            mMoviesGridAdapter.addItems(movies);
+        }
         toggleProgressIndicatorState(false);
     }
 
     private void toggleProgressIndicatorState(boolean turnOn){
         mProgressIndicator.setVisibility(turnOn ? View.VISIBLE : View.GONE);
     }
+
+    private boolean mLoading = false;
+    private int mCurrentPage = 1;
+
+    private RecyclerView.OnScrollListener onScrollListener = new RecyclerView.OnScrollListener() {
+
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            if(dy > 0) //check for scroll down
+            {
+                int pastVisiblesItems, visibleItemCount, totalItemCount;
+
+                visibleItemCount = mGridLayoutManager.getChildCount();
+                totalItemCount = mGridLayoutManager.getItemCount();
+                pastVisiblesItems = mGridLayoutManager.findFirstVisibleItemPosition();
+
+                if (!mLoading)
+                {
+                    if ( (visibleItemCount + pastVisiblesItems) >= totalItemCount)
+                    {
+                        mLoading = true;
+                        loadPage(++mCurrentPage);
+                    }
+                }
+            }
+        }
+    };
 }
