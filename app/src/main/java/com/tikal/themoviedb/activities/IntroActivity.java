@@ -3,6 +3,7 @@ package com.tikal.themoviedb.activities;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.util.Log;
 
 import com.tikal.themoviedb.R;
 import com.tikal.themoviedb.api.MdbApi;
@@ -22,6 +23,7 @@ import retrofit.client.Response;
  */
 public class IntroActivity extends Activity {
 
+    public static final String TAG = IntroActivity.class.getSimpleName();
     private boolean isTablet = OSUtil.isTablet();
 
     Timer splashTimer = new Timer();
@@ -67,7 +69,7 @@ public class IntroActivity extends Activity {
 
             @Override
             public void failure(RetrofitError error) {
-
+                Log.e(TAG,"loadConfiguration::failed " + error.getMessage());
             }
         });
 
